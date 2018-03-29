@@ -2,27 +2,47 @@ version: '2'
 
 services:
   kafka_monitor:
-    image: istresearch/scrapy-cluster:kafka-monitor-1.2.1
+    # image: istresearch/scrapy-cluster:kafka-monitor-1.2
+    build:
+      context: ./
+      dockerfile: ./docker/kafka-monitor/Dockerfile
     depends_on:
       - kafka
       - redis
     restart: always
+    volumes:
+     - /vol_b/data/scrapy_cluster_data:/var/lib/crawl_dump
+  kafka_dump:
+    # image: istresearch/scrapy-cluster:kafka-monitor-1.2
+    build:
+      context: ./
+      dockerfile: ./docker/kafka-monitor/Dockerfile_dump
+    depends_on:
+      - kafka
+      - redis
+    restart: always
+    volumes:
+     - /vol_b/data/scrapy_cluster_data:/var/lib/crawl_dump
   redis_monitor:
-    image: istresearch/scrapy-cluster:redis-monitor-1.2.1
+    image: istresearch/scrapy-cluster:redis-monitor-1.2
     depends_on:
       - kafka
       - redis
       - zookeeper
     restart: always
   crawler:
-    image: istresearch/scrapy-cluster:crawler-1.2.1
+    # image: istresearch/scrapy-cluster:crawler-1.2
+    build:
+      context: ./
+      dockerfile: ./docker/crawler/Dockerfile
     depends_on:
       - kafka
       - redis
       - zookeeper
     restart: always
+    privileged: true
   rest:
-    image: istresearch/scrapy-cluster:rest-1.2.1
+    image: istresearch/scrapy-cluster:rest-1.2
     depends_on:
       - kafka
       - redis
@@ -51,3 +71,27 @@ services:
     depends_on:
       - zookeeper
     restart: always
+  chrome:
+    image: selenium/node-chrome:3.9.1-actinium
+    volumes:
+      - /dev/shm:/dev/shm
+    depends_on:
+      - hub
+    environment:
+      HUB_HOST: hub
+  hub:
+    image: selenium/hub:3.9.1-actinium
+    ports:
+      - "4444"
+  # chrome_two:
+  #   image: selenium/node-chrome:3.9.1-actinium
+  #   volumes:
+  #     - /dev/shm:/dev/shm
+  #   depends_on:
+  #     - hub_two
+  #   environment:
+  #     HUB_HOST: hub_two
+  # hub_two:
+  #   image: selenium/hub:3.9.1-actinium
+  #   ports:
+  #     - "4444:4444"

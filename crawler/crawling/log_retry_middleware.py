@@ -33,7 +33,7 @@ class LogRetryMiddleware(object):
         Does the actual setup of the middleware
         '''
         # set up the default sc logger
-        my_level = settings.get('SC_LOG_LEVEL', 'INFO')
+        my_level = settings.get('SC_LOG_LEVEL', 'DEBUG')
         my_name = settings.get('SC_LOGGER_NAME', 'sc-logger')
         my_output = settings.get('SC_LOG_STDOUT', True)
         my_json = settings.get('SC_LOG_JSON', False)
@@ -99,7 +99,7 @@ class LogRetryMiddleware(object):
         extras['appid'] = request.meta['appid']
         extras['crawlid'] = request.meta['crawlid']
         extras['url'] = request.url
-
+        self.logger.error(str(extras))
         self.logger.error('Scraper Retry', extra=extras)
 
     def _setup_stats_status_codes(self):

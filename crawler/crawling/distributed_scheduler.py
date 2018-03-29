@@ -289,7 +289,8 @@ class DistributedScheduler(object):
                 raise IOError("Could not get valid IP Address")
             obj.close()
             self.logger.debug("Current public ip: {ip}".format(ip=self.my_ip))
-        except IOError:
+        except IOError as e:
+            self.logger.error(str(e))
             self.logger.error("Could not reach out to get public ip")
             pass
 
@@ -423,9 +424,10 @@ class DistributedScheduler(object):
                     # they call create_queues
                     self.redis_conn.zadd(key, ujson.dumps(req_dict),
                                         -req_dict['meta']['priority'])
-                self.logger.debug("Crawlid: '{id}' Appid: '{appid}' added to queue"
+                self.logger.debug("Crawlid: '{id}' Appid: '{appid}' URL: '{url}' added to queue"
                     .format(appid=req_dict['meta']['appid'],
-                            id=req_dict['meta']['crawlid']))
+                            id=req_dict['meta']['crawlid'],
+                            url=req_dict['url']))
             else:
                 self.logger.debug("Crawlid: '{id}' Appid: '{appid}' expired"
                                   .format(appid=req_dict['meta']['appid'],

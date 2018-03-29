@@ -11,11 +11,25 @@ import time
 import argparse
 import base64
 
+import sqlite3
+
 from scutils.settings_wrapper import SettingsWrapper
 from scutils.log_factory import LogFactory
 from scutils.method_timer import MethodTimer
 from scutils.argparse_helper import ArgparseHelper
 
+def dump_db_store(c, item):
+    response_url, url, body = item['response_url'], item['url'], item['body']
+    links = " ".join(item['links'])
+    appid, crawlid, time_stamp = item['appid'], item['crawlid'], item['timestamp']
+    response_headers = str(item['response_headers'])
+    request_headers, attrs = str(item['request_headers']), str(item['attrs'])
+    status_msg, status_code = item['status_msg'], str(item['status_code'])
+    is_pdf = item['is_pdf']
+    
+    c.execute("INSERT INTO dump VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)", (response_url, url,
+                            body, links, is_pdf, appid, crawlid, time_stamp, response_headers,
+                            request_headers, attrs, status_msg, status_code))
 def main():
     # initial main parser setup
     parser = argparse.ArgumentParser(
@@ -62,6 +76,9 @@ def main():
     dump_parser.add_argument('-d', '--decode-base64', action='store_const',
                              required=False, const=True, default=False,
                              help="Decode the base64 encoded raw html body")
+    dump_parser.add_argument('-sh', '--silent', action='store_const',
+                             required=False, const=True, default=False,
+                             help="Do not print output to the console")
 
     args = vars(parser.parse_args())
 
@@ -71,6 +88,20 @@ def main():
     kafka_host = args['kafka_host'] if args['kafka_host'] else settings['KAFKA_HOSTS']
     log_level = args['log_level'] if args['log_level'] else settings['LOG_LEVEL']
     logger = LogFactory.get_instance(level=log_level, name='kafkadump')
+
+    conn = sqlite3.connect(settings['DUMP_PATH'])
+    c = conn.cursor()
+    logger.debug("Connected to sqlite output db located at {0}".format(settings['DUMP_PATH']))
+
+    if len(list(c.execute("SELECT name FROM sqlite_master WHERE type='table';"))) == 0:
+        logger.info("Creating dump table")
+        c.execute("CREATE TABLE dump (response_url text, url text, body text, links text, is_pdf text, " +
+            "appid text, crawlid text, time_stamp text, response_headers text, request_headers text, " +
+            "attrs text, status_msg text, status_code text)")
+        logger.info("Created dump table")
+        conn.commit()
+    else:
+        logger.info("Table already exists")
 
     if args['command'] == 'list':
         try:
@@ -135,7 +166,10 @@ def main():
                         item = val
                     body_bytes = len(item)
 
-                    if args['pretty']:
+                    dump_db_store(c, item)
+                    conn.commit() # Temp fix
+
+                    if args['pretty'] and not args['silent']:
                         print(json.dumps(item, indent=4))
                     else:
                         print(item)
@@ -149,7 +183,7 @@ def main():
                 break
 
         total_mbs = old_div(float(total_bytes), (1024*1024))
-        if item is not None:
+        if item is not None and not args['silent']:
             print("Last item:")
             print(json.dumps(item, indent=4))
         if num_records > 0:
@@ -160,6 +194,10 @@ def main():
             logger.info("No records consumed")
             num_records = 0
 
+        # Commit updates to db, close connection
+        conn.commit()
+        conn.close()
+        logger.info("Closing database connection")
         logger.info("Closing Kafka connection")
         try:
             consumer.close()

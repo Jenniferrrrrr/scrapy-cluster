@@ -38,7 +38,7 @@ SCHEDULER_PERSIST = True
 SCHEDULER_QUEUE_REFRESH = 10
 
 # throttled queue defaults per domain, x hits in a y second window
-QUEUE_HITS = int(os.getenv('QUEUE_HITS', 10))
+QUEUE_HITS = int(os.getenv('QUEUE_HITS', 5))
 QUEUE_WINDOW = int(os.getenv('QUEUE_WINDOW', 60))
 
 # we want the queue to produce a consistent pop flow
@@ -58,13 +58,10 @@ SCHEDULER_BACKLOG_BLACKLIST = True
 The below parameters configure how spiders throttle themselves across the cluster
 All throttling is based on the TLD of the page you are requesting, plus any of the
 following parameters:
-
 Type: You have different spider types and want to limit how often a given type of
 spider hits a domain
-
 IP: Your crawlers are spread across different IP's, and you want each IP crawler clump
 to throttle themselves for a given domain
-
 Combinations for any given Top Level Domain:
 None - all spider types and all crawler ips throttle themselves from one tld queue
 Type only - all spiders throttle themselves based off of their own type-based tld queue,
@@ -84,7 +81,7 @@ SCHEDULER_IP_ENABLED = str2bool(os.getenv('SCHEDULER_IP_ENABLED', True))
 '''
 
 # how many times to retry getting an item from the queue before the spider is considered idle
-SCHEUDLER_ITEM_RETRIES = 3
+SCHEUDLER_ITEM_RETRIES = 5
 
 # how long to keep around stagnant domain queues
 SCHEDULER_QUEUE_TIMEOUT = int(os.getenv('SCHEDULER_QUEUE_TIEOUT', 3600))
@@ -95,9 +92,9 @@ SC_LOG_DIR = os.getenv('SC_LOG_DIR', 'logs')
 SC_LOG_FILE = 'sc_crawler.log'
 SC_LOG_MAX_BYTES = 10 * 1024 * 1024
 SC_LOG_BACKUPS = 5
-SC_LOG_STDOUT = str2bool(os.getenv('SC_LOG_STDOUT', True))
+SC_LOG_STDOUT = str2bool(os.getenv('SC_LOG_STDOUT', False))
 SC_LOG_JSON = str2bool(os.getenv('SC_LOG_JSON', False))
-SC_LOG_LEVEL = os.getenv('SC_LOG_LEVEL', 'INFO')
+SC_LOG_LEVEL = os.getenv('SC_LOG_LEVEL', 'DEBUG')
 
 
 # stats setup
@@ -157,18 +154,19 @@ DOWNLOADER_MIDDLEWARES = {
     'crawling.log_retry_middleware.LogRetryMiddleware': 520,
     # custom cookies to not persist across crawl requests
     'scrapy.downloadermiddlewares.cookies.CookiesMiddleware': None,
-    'crawling.custom_cookies.CustomCookiesMiddleware': 700,
+    'crawling.custom_cookies.CustomCookiesMiddleware': 700
+    # 'crawling.pdf_middleware.PDFMiddleware': 701
 }
 
 # Disable the built in logging in production
-LOG_ENABLED = str2bool(os.getenv('LOG_ENABLED', False))
+LOG_ENABLED = str2bool(os.getenv('LOG_ENABLED', True))
 
 # Allow all return codes
 HTTPERROR_ALLOW_ALL = True
 
-RETRY_TIMES = 3
+RETRY_TIMES = 5
 
-DOWNLOAD_TIMEOUT = 10
+DOWNLOAD_TIMEOUT = 100
 
 # Avoid in-memory DNS cache. See Advanced topics of docs for info
 DNSCACHE_ENABLED = True

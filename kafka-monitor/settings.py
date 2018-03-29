@@ -34,9 +34,9 @@ LOG_DIR = 'logs'
 LOG_FILE = 'kafka_monitor.log'
 LOG_MAX_BYTES = 10 * 1024 * 1024
 LOG_BACKUPS = 5
-LOG_STDOUT = True
+LOG_STDOUT = False
 LOG_JSON = False
-LOG_LEVEL = 'INFO'
+LOG_LEVEL = 'DEBUG'
 
 # stats setup
 STATS_TOTAL = True
@@ -56,3 +56,5 @@ STATS_TIMES = [
 # main thread sleep time
 SLEEP_TIME = 0.01
 HEARTBEAT_TIMEOUT = 120
+
+DUMP_PATH = "/var/lib/crawl_dump/data.db"

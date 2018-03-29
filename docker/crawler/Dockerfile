@@ -10,6 +10,7 @@ RUN apt-get update && apt-get -y install \
   python-dev \
   libxml2-dev \
   libxslt1-dev \
+  vim \
   && rm -rf /var/lib/apt/lists/*
 RUN mkdir -p /usr/src/app
 WORKDIR /usr/src/app
@@ -30,4 +31,4 @@ COPY docker/run_docker_tests.sh /usr/src/app/run_docker_tests.sh
 # set up environment variables
 
 # run the spider
-CMD ["scrapy", "runspider", "crawling/spiders/link_spider.py"]
+CMD ["scrapy", "runspider", "crawling/spiders/parsing_link_spider.py"]
