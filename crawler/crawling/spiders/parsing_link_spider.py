@@ -46,13 +46,13 @@ class ParsingLinkSpider(RedisSpider):
         return visible_text
 
     def parse(self, response):
-        self._logger.debug("crawled url {}".format(response.request.url))
+        self._logger.debug("starting parse on url {}".format(response.request.url))
         cur_depth = 0
         if 'curdepth' in response.meta:
             cur_depth = response.meta['curdepth']
         else:
             response.meta['curdepth'] = cur_depth
-
+        self._logger.debug("Forming response object")
         # capture raw response
         item = RawResponseItem()
         # populated from response.meta
@@ -81,17 +81,23 @@ class ParsingLinkSpider(RedisSpider):
         #                                               response.meta['maxdepth']))
         # else:
         # we are spidering -- yield Request for each discovered link
+        self._logger.debug("Making link extractor")
         link_extractor = LinkExtractor(
                         allow_domains=response.meta['allowed_domains'],
                         allow=response.meta['allow_regex'],
                         deny=response.meta['deny_regex'],
                         deny_extensions=response.meta['deny_extensions'])
+        self._logger.debug("Found the following links " + str(link_extractor.extract_links(response)))
+        self._logger.debug("allowed_domains=" + str(response.meta['allowed_domains']))
+        self._logger.debug("allow_regex=" + str(response.meta['allow_regex']))
+        self._logger.debug("deny_regex=" + str(response.meta['deny_regex']))
+        self._logger.debug("deny_extensions=" + str(response.meta['deny_extensions']))
 
         for link in link_extractor.extract_links(response):
             # link that was discovered
             the_url = link.url
             the_url = the_url.replace('\n', '')
-            item["links"].append({"url": the_url, "text": link.text, })
+            item["links"].append("(url: " + the_url + ", text: " + link.text + ")")
             req = Request(the_url, callback=self.parse)
 
             req.meta['priority'] = response.meta['priority'] - 10
