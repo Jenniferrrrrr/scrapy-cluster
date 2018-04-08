@@ -73,42 +73,42 @@ class ParsingLinkSpider(RedisSpider):
         item["is_pdf"] = "False"
 
         # determine whether to continue spidering
-        # if cur_depth >= response.meta['maxdepth']:
-        #     self._logger.debug("Not spidering links in '{}' because" \
-        #         " cur_depth={} >= maxdepth={}".format(
-        #                                               response.url,
-        #                                               cur_depth,
-        #                                               response.meta['maxdepth']))
-        # else:
+        if cur_depth >= response.meta['maxdepth']:
+            self._logger.debug("Not spidering links in '{}' because" \
+                " cur_depth={} >= maxdepth={}".format(
+                                                      response.url,
+                                                      cur_depth,
+                                                      response.meta['maxdepth']))
+        else:
         # we are spidering -- yield Request for each discovered link
-        self._logger.debug("Making link extractor")
-        link_extractor = LinkExtractor(
-                        allow_domains=response.meta['allowed_domains'],
-                        allow=response.meta['allow_regex'],
-                        deny=response.meta['deny_regex'],
-                        deny_extensions=response.meta['deny_extensions'])
-        self._logger.debug("Found the following links " + str(link_extractor.extract_links(response)))
-        self._logger.debug("allowed_domains=" + str(response.meta['allowed_domains']))
-        self._logger.debug("allow_regex=" + str(response.meta['allow_regex']))
-        self._logger.debug("deny_regex=" + str(response.meta['deny_regex']))
-        self._logger.debug("deny_extensions=" + str(response.meta['deny_extensions']))
+            self._logger.debug("Making link extractor")
+            link_extractor = LinkExtractor(
+                            allow_domains=response.meta['allowed_domains'],
+                            allow=response.meta['allow_regex'],
+                            deny=response.meta['deny_regex'],
+                            deny_extensions=response.meta['deny_extensions'])
+            self._logger.debug("Found the following links " + str(link_extractor.extract_links(response)))
+            # self._logger.debug("allowed_domains=" + str(response.meta['allowed_domains']))
+            # self._logger.debug("allow_regex=" + str(response.meta['allow_regex']))
+            # self._logger.debug("deny_regex=" + str(response.meta['deny_regex']))
+            # self._logger.debug("deny_extensions=" + str(response.meta['deny_extensions']))
 
-        for link in link_extractor.extract_links(response):
-            # link that was discovered
-            the_url = link.url
-            the_url = the_url.replace('\n', '')
-            item["links"].append("(url: " + the_url + ", text: " + link.text + ")")
-            req = Request(the_url, callback=self.parse)
+            for link in link_extractor.extract_links(response):
+                # link that was discovered
+                the_url = link.url
+                the_url = the_url.replace('\n', '')
+                item["links"].append({"url": the_url, "text": link.text, })
+                req = Request(the_url, callback=self.parse)
 
-            req.meta['priority'] = response.meta['priority'] - 10
-            req.meta['curdepth'] = response.meta['curdepth'] + 1
+                req.meta['priority'] = response.meta['priority'] - 10
+                req.meta['curdepth'] = response.meta['curdepth'] + 1
 
-            if 'useragent' in response.meta and \
-                    response.meta['useragent'] is not None:
-                req.headers['User-Agent'] = response.meta['useragent']
+                if 'useragent' in response.meta and \
+                        response.meta['useragent'] is not None:
+                    req.headers['User-Agent'] = response.meta['useragent']
 
-            self._logger.debug("Trying to follow link '{}'".format(req.url))
-            yield req
+                self._logger.debug("Trying to follow link '{}'".format(req.url))
+                yield req
 
         # raw response has been processed, yield to item pipeline
         yield item
