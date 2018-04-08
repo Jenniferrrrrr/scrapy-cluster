@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import threading, logging, time
+import threading, logging
 import multiprocessing
 import csv
 
@@ -23,9 +23,7 @@ class Producer(threading.Thread):
                 i += 1
                 if i == 0:
                     continue
-                producer.send('demo.incoming', '{"url": "'+row[3]+'", "allowed_domains":["'+row[3]+'"], "appid":"testapp", "crawlid":"micro-sample_Apr17_rev3'+str(i)+'", "spiderid":"parsing_link"}')
-                print(i)
-                time.sleep(0.1)
+                producer.send('demo.incoming', '{"url": "'+row[3]+'", "allowed_domains":["'+row[3]+'"], "appid":"testapp", "crawlid":"micro-sample_Apr17_rev3'+str(i)+'", "spiderid":"parsing_link", "maxdepth": 10}')
         producer.close()
 
 
@@ -40,8 +38,6 @@ def main():
     num_rows = 0
     with open('micro-sample_Apr17_rev3.csv', 'rb') as csvfile:
         num_rows = sum(1 for row in csvfile)
-
-    # time.sleep(num_rows / 0.1 + 15)
 
     for task in tasks:
         task.stop()
