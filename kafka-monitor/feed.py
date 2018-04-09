@@ -23,7 +23,7 @@ class Producer(threading.Thread):
                 i += 1
                 if i == 0:
                     continue
-                producer.send('demo.incoming', '{"url": "'+row[3]+'", "allowed_domains":["'+row[3][row[3].find("//") + 2:].replace("www.", "").replace("www2.", "")+'"], "appid":"testapp", "crawlid":"micro-sample_Apr17_rev3'+str(i)+'", "spiderid":"parsing_link", "maxdepth": 10}')
+                producer.send('demo.incoming', '{"url": "'+row[3]+'", "appid":"testapp", "crawlid":"micro-sample_Apr17_rev3'+str(i)+'", "spiderid":"parsing_link", "maxdepth": 3}')
         producer.close()
 
 
