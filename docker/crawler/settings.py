@@ -38,7 +38,7 @@ SCHEDULER_PERSIST = True
 SCHEDULER_QUEUE_REFRESH = 10
 
 # throttled queue defaults per domain, x hits in a y second window
-QUEUE_HITS = int(os.getenv('QUEUE_HITS', 5))
+QUEUE_HITS = int(os.getenv('QUEUE_HITS', 10))
 QUEUE_WINDOW = int(os.getenv('QUEUE_WINDOW', 60))
 
 # we want the queue to produce a consistent pop flow

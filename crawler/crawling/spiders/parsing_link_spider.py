@@ -92,7 +92,7 @@ class ParsingLinkSpider(RedisSpider):
                 # link that was discovered
                 the_url = link.url
                 the_url = the_url.replace('\n', '')
-                if not response.url.lower().split("//")[1].startswith(link.url.lower().split("//")[1]):
+                if not link.url.lower().split("//")[1].startswith(response.url.lower().split("//")[1]):
                     continue
                 item["links"].append(str({"url": the_url, "text": link.text, }))
                 req = Request(the_url, callback=self.parse)
