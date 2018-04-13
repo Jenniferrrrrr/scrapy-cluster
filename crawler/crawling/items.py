@@ -20,3 +20,4 @@ class RawResponseItem(Item):
     success = Field()
     exception = Field()
     is_pdf = Field()
+    orig_domain = Field()
