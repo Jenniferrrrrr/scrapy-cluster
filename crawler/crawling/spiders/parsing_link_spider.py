@@ -87,7 +87,7 @@ class ParsingLinkSpider(RedisSpider):
             data =  retstr.getvalue()
         return data
 
-    def validate_link(link, orig_domain):
+    def validate_link(self, link, orig_domain):
         link = link.lower()
         if (link[len(link)-4:] == '.pdf') or ('.pdf?' in link):
             return True
@@ -102,7 +102,7 @@ class ParsingLinkSpider(RedisSpider):
             orig_domain = response.meta["orig_domain"]
         else:
             response.meta["orig_domain"] = orig_domain
-        if not validate_link(response.url, orig_domain):
+        if not self.validate_link(response.url, orig_domain):
             return
 
         self._logger.debug("starting parse on url {}".format(response.request.url))
@@ -128,19 +128,19 @@ class ParsingLinkSpider(RedisSpider):
         item["request_headers"] = response.request.headers
         item["links"] = []
 
-        is_pdf = "False"
+        is_pdf = False
         url = response.url.lower()
         if (url[len(url)-4:] == '.pdf') or ('.pdf?' in url):
-            is_pdf = "True"
+            is_pdf = True
 
-        item["is_pdf"] = is_pdf
+        item["is_pdf"] = str(is_pdf)
         if is_pdf:
             self._logger.debug("Handling pdf file")
             self.download_file(response.url)
             item["body"] = self.pdfparser("temp_document.pdf")
         else:
             item["body"] = self.gather_text(response.body)
-
+	    self._logger.debug("Current depth: " + str(cur_depth))
             # determine whether to continue spidering
             if cur_depth >= response.meta['maxdepth']:
                 self._logger.debug("Not spidering links in '{}' because" \
@@ -160,7 +160,7 @@ class ParsingLinkSpider(RedisSpider):
                     # link that was discovered
                     the_url = link.url
                     the_url = the_url.replace('\n', '')
-                    if not validate_link(the_url, orig_domain):
+                    if not self.validate_link(the_url, orig_domain):
                         continue
                     item["links"].append(str({"url": the_url, "text": link.text, }))
                     req = Request(the_url, callback=self.parse)

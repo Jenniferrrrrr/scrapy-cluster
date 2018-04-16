@@ -38,7 +38,7 @@ SCHEDULER_PERSIST = True
 SCHEDULER_QUEUE_REFRESH = 10
 
 # throttled queue defaults per domain, x hits in a y second window
-QUEUE_HITS = int(os.getenv('QUEUE_HITS', 10))
+QUEUE_HITS = int(os.getenv('QUEUE_HITS', 30))
 QUEUE_WINDOW = int(os.getenv('QUEUE_WINDOW', 60))
 
 # we want the queue to produce a consistent pop flow
@@ -84,7 +84,7 @@ SCHEDULER_IP_ENABLED = str2bool(os.getenv('SCHEDULER_IP_ENABLED', True))
 SCHEUDLER_ITEM_RETRIES = 5
 
 # how long to keep around stagnant domain queues
-SCHEDULER_QUEUE_TIMEOUT = int(os.getenv('SCHEDULER_QUEUE_TIEOUT', 3600))
+SCHEDULER_QUEUE_TIMEOUT = int(os.getenv('SCHEDULER_QUEUE_TIEOUT', 1800))
 
 # log setup scrapy cluster crawler
 SC_LOGGER_NAME = 'sc-crawler'
@@ -164,9 +164,9 @@ LOG_ENABLED = str2bool(os.getenv('LOG_ENABLED', True))
 # Allow all return codes
 HTTPERROR_ALLOW_ALL = True
 
-RETRY_TIMES = 5
+RETRY_TIMES = 2
 
-DOWNLOAD_TIMEOUT = 100
+DOWNLOAD_TIMEOUT = 10
 
 # Avoid in-memory DNS cache. See Advanced topics of docs for info
 DNSCACHE_ENABLED = True
