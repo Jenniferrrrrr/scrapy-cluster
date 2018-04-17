@@ -18,6 +18,8 @@ from scutils.log_factory import LogFactory
 from scutils.method_timer import MethodTimer
 from scutils.argparse_helper import ArgparseHelper
 
+dump_batch = []
+
 def dump_db_store(c, item):
     response_url, url, body = item['response_url'], item['url'], item['body']
     links = " ".join(item['links'])
@@ -30,6 +32,28 @@ def dump_db_store(c, item):
     c.execute("INSERT INTO dump VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)", (response_url, url,
                             body, links, is_pdf, appid, crawlid, time_stamp, response_headers,
                             request_headers, attrs, status_msg, status_code))
+
+
+def batch_db_store(c, conn, item, logger, batch_size, closing=False):
+
+    if not closing:
+        logger.debug("Adding " + response_url + " to batch, current batch size is " + str(len(dump_batch)))
+        response_url, url, body = item['response_url'], item['url'], item['body']
+        links = " ".join(item['links'])
+        appid, crawlid, time_stamp = item['appid'], item['crawlid'], item['timestamp']
+        response_headers = str(item['response_headers'])
+        request_headers, attrs = str(item['request_headers']), str(item['attrs'])
+        status_msg, status_code = item['status_msg'], str(item['status_code'])
+        is_pdf = item['is_pdf']
+
+        new_item = (response_url, url, body, links, is_pdf, appid, crawlid, time_stamp, response_headers, request_headers, attrs, status_msg, status_code)
+        dump_batch.append(new_item)
+    if len(dump_batch) == batch_size or closing:
+        c.executemany("INSERT INTO dump VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)", dump_batch)
+        conn.commit()
+        logger.debug("Inserted batch")
+    dump_batch = []
+
 def main():
     # initial main parser setup
     parser = argparse.ArgumentParser(
@@ -166,13 +190,12 @@ def main():
                         item = val
                     body_bytes = len(item)
 
-                    dump_db_store(c, item)
-                    conn.commit() # Temp fix
+                    batch_db_store(c, conn, item, logger, settings["DB_BATCH_SIZE"])
 
-                    if args['pretty'] and not args['silent']:
-                        print(json.dumps(item, indent=4))
-                    else:
-                        print(item)
+                    # if args['pretty'] and not args['silent']:
+                    #     print(json.dumps(item, indent=4))
+                    # else:
+                    #     print(item)
                     num_records = num_records + 1
                     total_bytes = total_bytes + body_bytes
             except KeyboardInterrupt:
@@ -195,6 +218,9 @@ def main():
             num_records = 0
 
         # Commit updates to db, close connection
+        if len(dump_batch) != 0:
+            batch_db_store(c, conn, None, logger, settings["DB_BATCH_SIZE"], closing=True)
+            logger.debug("Inserted remaining " + str(dump_batch) + " entries into db")
         conn.commit()
         conn.close()
         logger.info("Closing database connection")
