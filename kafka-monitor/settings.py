@@ -58,3 +58,4 @@ SLEEP_TIME = 0.01
 HEARTBEAT_TIMEOUT = 120
 
 DUMP_PATH = "/var/lib/crawl_dump/data.db"
+DB_BATCH_SIZE = 1000
