@@ -18,7 +18,6 @@ from scutils.log_factory import LogFactory
 from scutils.method_timer import MethodTimer
 from scutils.argparse_helper import ArgparseHelper
 
-dump_batch = []
 
 def dump_db_store(c, item):
     response_url, url, body = item['response_url'], item['url'], item['body']
@@ -34,10 +33,9 @@ def dump_db_store(c, item):
                             request_headers, attrs, status_msg, status_code))
 
 
-def batch_db_store(c, conn, item, logger, batch_size, closing=False):
+def batch_db_store(dump_batch, c, conn, item, logger, batch_size, closing=False):
 
     if not closing:
-        logger.debug("Adding " + response_url + " to batch, current batch size is " + str(len(dump_batch)))
         response_url, url, body = item['response_url'], item['url'], item['body']
         links = " ".join(item['links'])
         appid, crawlid, time_stamp = item['appid'], item['crawlid'], item['timestamp']
@@ -46,13 +44,18 @@ def batch_db_store(c, conn, item, logger, batch_size, closing=False):
         status_msg, status_code = item['status_msg'], str(item['status_code'])
         is_pdf = item['is_pdf']
 
+        logger.debug("Adding " + response_url + " to batch, current batch size is " + str(len(dump_batch)))
+
         new_item = (response_url, url, body, links, is_pdf, appid, crawlid, time_stamp, response_headers, request_headers, attrs, status_msg, status_code)
         dump_batch.append(new_item)
     if len(dump_batch) == batch_size or closing:
         c.executemany("INSERT INTO dump VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)", dump_batch)
         conn.commit()
-        logger.debug("Inserted batch")
-    dump_batch = []
+        logger.info("Inserted batch")
+	dump_batch = []
+    else:
+	logger.debug("dump_batch size = " + str(len(dump_batch)) + " and batch_size = " + str(batch_size) + " and closing = " + str(closing))
+    return dump_batch
 
 def main():
     # initial main parser setup
@@ -170,6 +173,8 @@ def main():
         total_bytes = 0
         item = None
 
+	dump_batch = []
+	
         while True:
             try:
                 for message in consumer:
@@ -189,8 +194,10 @@ def main():
                         logger.info("Message is not a JSON object")
                         item = val
                     body_bytes = len(item)
+		    if "flush" in item:
+			raise Exception
 
-                    batch_db_store(c, conn, item, logger, settings["DB_BATCH_SIZE"])
+                    dump_batch = batch_db_store(dump_batch, c, conn, item, logger, settings["DB_BATCH_SIZE"])
 
                     # if args['pretty'] and not args['silent']:
                     #     print(json.dumps(item, indent=4))
@@ -219,7 +226,8 @@ def main():
 
         # Commit updates to db, close connection
         if len(dump_batch) != 0:
-            batch_db_store(c, conn, None, logger, settings["DB_BATCH_SIZE"], closing=True)
+            batch_db_store(dump_batch, c, conn, None, logger, settings["DB_BATCH_SIZE"], closing=True)
+		#	print(item)
             logger.debug("Inserted remaining " + str(dump_batch) + " entries into db")
         conn.commit()
         conn.close()
