@@ -91,6 +91,8 @@ class ParsingLinkSpider(RedisSpider):
         link = link.lower()
         if (link[len(link)-4:] == '.pdf') or ('.pdf?' in link):
             return True
+	if "calendar" in link:
+	    return False
         if not link.split("//")[1].startswith(orig_domain.lower().split("//")[1]):
             return False
         return True
@@ -127,6 +129,7 @@ class ParsingLinkSpider(RedisSpider):
         item["response_headers"] = self.reconstruct_headers(response)
         item["request_headers"] = response.request.headers
         item["links"] = []
+	item["curdepth"] = str(cur_depth)
 
         is_pdf = False
         url = response.url.lower()

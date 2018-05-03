@@ -21,3 +21,4 @@ class RawResponseItem(Item):
     exception = Field()
     is_pdf = Field()
     orig_domain = Field()
+    curdepth = Field()

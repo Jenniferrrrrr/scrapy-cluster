@@ -36,7 +36,7 @@ LOG_MAX_BYTES = 10 * 1024 * 1024
 LOG_BACKUPS = 5
 LOG_STDOUT = False
 LOG_JSON = False
-LOG_LEVEL = 'DEBUG'
+LOG_LEVEL = 'INFO'
 
 # stats setup
 STATS_TOTAL = True
@@ -57,5 +57,5 @@ STATS_TIMES = [
 SLEEP_TIME = 0.01
 HEARTBEAT_TIMEOUT = 120
 
-DUMP_PATH = "/var/lib/crawl_dump/data_10.db"
+DUMP_PATH = "/var/lib/crawl_dump/data_2.db"
 DB_BATCH_SIZE = 5000

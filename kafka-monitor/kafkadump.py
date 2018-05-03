@@ -27,10 +27,11 @@ def dump_db_store(c, item):
     request_headers, attrs = str(item['request_headers']), str(item['attrs'])
     status_msg, status_code = item['status_msg'], str(item['status_code'])
     is_pdf = item['is_pdf']
+    cur_depth = item["curdepth"]
     
-    c.execute("INSERT INTO dump VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)", (response_url, url,
+    c.execute("INSERT INTO dump VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)", (response_url, url,
                             body, links, is_pdf, appid, crawlid, time_stamp, response_headers,
-                            request_headers, attrs, status_msg, status_code))
+                            request_headers, attrs, status_msg, status_code, cur_depth))
 
 
 def batch_db_store(dump_batch, c, conn, item, logger, batch_size, closing=False):
@@ -43,13 +44,14 @@ def batch_db_store(dump_batch, c, conn, item, logger, batch_size, closing=False)
         request_headers, attrs = str(item['request_headers']), str(item['attrs'])
         status_msg, status_code = item['status_msg'], str(item['status_code'])
         is_pdf = item['is_pdf']
+	cur_depth = item['curdepth']
 
         logger.debug("Adding " + response_url + " to batch, current batch size is " + str(len(dump_batch)))
 
-        new_item = (response_url, url, body, links, is_pdf, appid, crawlid, time_stamp, response_headers, request_headers, attrs, status_msg, status_code)
+        new_item = (response_url, url, body, links, is_pdf, appid, crawlid, time_stamp, response_headers, request_headers, attrs, status_msg, status_code, cur_depth)
         dump_batch.append(new_item)
     if len(dump_batch) == batch_size or closing:
-        c.executemany("INSERT INTO dump VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)", dump_batch)
+        c.executemany("INSERT INTO dump VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)", dump_batch)
         conn.commit()
         logger.info("Inserted batch")
 	dump_batch = []
@@ -124,7 +126,7 @@ def main():
         logger.info("Creating dump table")
         c.execute("CREATE TABLE dump (response_url text, url text, body text, links text, is_pdf text, " +
             "appid text, crawlid text, time_stamp text, response_headers text, request_headers text, " +
-            "attrs text, status_msg text, status_code text)")
+            "attrs text, status_msg text, status_code text, curdepth text)")
         logger.info("Created dump table")
         conn.commit()
     else:
@@ -228,7 +230,7 @@ def main():
         if len(dump_batch) != 0:
             batch_db_store(dump_batch, c, conn, None, logger, settings["DB_BATCH_SIZE"], closing=True)
 		#	print(item)
-            logger.debug("Inserted remaining " + str(dump_batch) + " entries into db")
+            logger.info("Inserted remaining " + str(dump_batch) + " entries into db")
         conn.commit()
         conn.close()
         logger.info("Closing database connection")

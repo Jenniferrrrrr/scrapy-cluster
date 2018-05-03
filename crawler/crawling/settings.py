@@ -33,7 +33,7 @@ SCHEDULER_PERSIST = True
 SCHEDULER_QUEUE_REFRESH = 10
 
 # throttled queue defaults per domain, x hits in a y second window
-QUEUE_HITS = 30
+QUEUE_HITS = 200
 QUEUE_WINDOW = 60
 
 # we want the queue to produce a consistent pop flow
@@ -90,7 +90,7 @@ SC_LOG_BACKUPS = 5
 SC_LOG_STDOUT = False
 
 SC_LOG_JSON = False
-SC_LOG_LEVEL = 'DEBUG'
+SC_LOG_LEVEL = 'INFO'
 
 
 # stats setup
