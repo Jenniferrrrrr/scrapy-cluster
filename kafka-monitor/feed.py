@@ -2,42 +2,53 @@
 import threading, logging
 import multiprocessing
 import csv
+import sys
 
 from kafka import KafkaProducer
 
 
 class Producer(threading.Thread):
-    def __init__(self):
+    def __init__(self, filename):
         threading.Thread.__init__(self)
         self.stop_event = threading.Event()
+        self.filename = filename
         
     def stop(self):
         self.stop_event.set()
 
     def run(self):
         producer = KafkaProducer(bootstrap_servers='kafka:9092')
+        url_col = -1
         i = -1
-        with open('micro-sample_Apr17_rev3.csv', 'rb') as csvfile:
+        with open(self.filename, 'rb') as csvfile:
             reader = csv.reader(csvfile,delimiter=',')
             for row in reader:
                 i += 1
                 if i == 0:
+                    try:
+                        url_col = row.index("URL")
+                    except ValueError:
+                        print("ERROR: The csv must have a column header titled 'URL'")
+                        return
                     continue
-                producer.send('demo.incoming', '{"url": "'+row[3]+'", "appid":"testapp", "crawlid":"micro-sample_Apr17_rev3_'+str(i)+'", "spiderid":"parsing_link", "maxdepth": 2}')
+                producer.send('demo.incoming', '{"url": "'+row[url_col]+'", "appid":"testapp", "crawlid":"micro-sample_Apr17_rev3_'+str(i)+'", "spiderid":"parsing_link", "maxdepth": 2}')
         producer.close()
 
 
 def main():
+    csv_file_name = ""
+    if len(sys.argv) <= 1:
+        print("ERROR: You must pass in the csv filename as an argument")
+        return
+    else:
+        csv_file_name = sys.argv[1]
+
     tasks = [
-        Producer()
+        Producer(csv_file_name)
     ]
 
     for t in tasks:
         t.start()
-
-    num_rows = 0
-    with open('micro-sample_Apr17_rev3.csv', 'rb') as csvfile:
-        num_rows = sum(1 for row in csvfile)
 
     for task in tasks:
         task.stop()
