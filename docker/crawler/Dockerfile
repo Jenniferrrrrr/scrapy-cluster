@@ -11,6 +11,8 @@ RUN apt-get update && apt-get -y install \
   libxml2-dev \
   libxslt1-dev \
   vim \
+  tesseract-ocr \
+  libtesseract-dev \
   && rm -rf /var/lib/apt/lists/*
 RUN mkdir -p /usr/src/app
 WORKDIR /usr/src/app
