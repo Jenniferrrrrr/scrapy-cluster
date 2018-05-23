@@ -20,7 +20,7 @@ class Producer(threading.Thread):
         producer = KafkaProducer(bootstrap_servers='kafka:9092')
         url_col = -1
         i = -1
-        with open(self.filename, 'rb') as csvfile:
+        with open(self.filename, 'rU') as csvfile:
             reader = csv.reader(csvfile,delimiter=',')
             for row in reader:
                 i += 1
@@ -31,7 +31,7 @@ class Producer(threading.Thread):
                         print("ERROR: The csv must have a column header titled 'URL'")
                         return
                     continue
-                producer.send('demo.incoming', '{"url": "'+row[url_col]+'", "appid":"testapp", "crawlid":"micro-sample_Apr17_rev3_'+str(i)+'", "spiderid":"parsing_link", "maxdepth": 2}')
+                producer.send('demo.incoming', '{"url": "'+row[url_col]+'", "appid":"testapp", "crawlid":"' + self.filename + "_" +str(i)+'", "spiderid":"parsing_link", "maxdepth": 2}')
         producer.close()
 
 

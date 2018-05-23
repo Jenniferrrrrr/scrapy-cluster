@@ -37,7 +37,7 @@ LOG_DIR = os.getenv('LOG_DIR', 'logs')
 LOG_FILE = 'kafka_monitor.log'
 LOG_MAX_BYTES = 10 * 1024 * 1024
 LOG_BACKUPS = 5
-LOG_STDOUT = str2bool(os.getenv('LOG_STDOUT', True))
+LOG_STDOUT = str2bool(os.getenv('LOG_STDOUT', False))
 LOG_JSON = str2bool(os.getenv('LOG_JSON', False))
 LOG_LEVEL = os.getenv('LOG_LEVEL', 'INFO')
 
