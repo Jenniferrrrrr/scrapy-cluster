@@ -2,7 +2,7 @@ version: '2'
 
 services:
   kafka_monitor:
-    # image: istresearch/scrapy-cluster:kafka-monitor-1.2
+    # image: istresearch/scrapy-cluster:kafka-monitor-1.2.1
     build:
       context: ./
       dockerfile: ./docker/kafka-monitor/Dockerfile
@@ -13,7 +13,7 @@ services:
     volumes:
      - /vol_b/data/scrapy_cluster_data:/var/lib/crawl_dump
   kafka_dump:
-    # image: istresearch/scrapy-cluster:kafka-monitor-1.2
+    # image: istresearch/scrapy-cluster:kafka-monitor-1.2.1
     build:
       context: ./
       dockerfile: ./docker/kafka-monitor/Dockerfile_dump
@@ -24,14 +24,14 @@ services:
     volumes:
      - /vol_b/data/scrapy_cluster_data:/var/lib/crawl_dump
   redis_monitor:
-    image: istresearch/scrapy-cluster:redis-monitor-1.2
+    image: istresearch/scrapy-cluster:redis-monitor-1.2.1
     depends_on:
       - kafka
       - redis
       - zookeeper
     restart: always
   crawler:
-    # image: istresearch/scrapy-cluster:crawler-1.2
+    # image: istresearch/scrapy-cluster:crawler-1.2.1
     build:
       context: ./
       dockerfile: ./docker/crawler/Dockerfile
@@ -42,7 +42,7 @@ services:
     restart: always
     privileged: true
   rest:
-    image: istresearch/scrapy-cluster:rest-1.2
+    image: istresearch/scrapy-cluster:rest-1.2.1
     depends_on:
       - kafka
       - redis
@@ -66,6 +66,7 @@ services:
     environment:
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_ADVERTISED_HOST_NAME: kafka
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     depends_on:

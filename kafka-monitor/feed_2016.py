@@ -15,7 +15,7 @@ class Producer(threading.Thread):
         self.stop_event.set()
 
     def run(self):
-        producer = KafkaProducer(bootstrap_servers='kafka:9092')
+        producer = KafkaProducer(bootstrap_servers='localhost:9092')
         i = -1
         with open('charter_URLs_2016.csv', 'rU') as csvfile:
             reader = csv.reader(csvfile,delimiter=',')

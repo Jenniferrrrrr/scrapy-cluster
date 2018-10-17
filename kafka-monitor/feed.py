@@ -17,7 +17,7 @@ class Producer(threading.Thread):
         self.stop_event.set()
 
     def run(self):
-        producer = KafkaProducer(bootstrap_servers='kafka:9092')
+        producer = KafkaProducer(bootstrap_servers=['kafka: 9092'])
         url_col = -1
         i = -1
         with open(self.filename, 'rU') as csvfile:

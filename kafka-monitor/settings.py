@@ -3,11 +3,11 @@
 
 # Redis host information
 REDIS_HOST = 'localhost'
-REDIS_PORT = 6379
+REDIS_PORT = 9092
 REDIS_DB = 0
 
 # Kafka server information
-KAFKA_HOSTS = ['localhost:9092']
+KAFKA_HOSTS = ['9092']
 KAFKA_INCOMING_TOPIC = 'demo.incoming'
 KAFKA_GROUP = 'demo-group'
 KAFKA_FEED_TIMEOUT = 10
