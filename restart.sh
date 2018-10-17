@@ -5,7 +5,5 @@ sudo rm -f /vol_b/data/scrapy_cluster_data/data.db
 
 # Build containers
 docker-compose build
-# Start up new containers
-docker-compose up -d
-# Scale up the crawler container to have 10 total copies
-docker-compose scale crawler=10
+# Start up new containers, scaling to 10 copies of crawler container
+docker-compose up -d --scale crawler=10
