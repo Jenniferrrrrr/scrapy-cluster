@@ -46,12 +46,16 @@ def main():
     tasks = [
         Producer(csv_file_name)
     ]
+    print "****************HERE ARE THE LIST OF TASKS*********************"
+    print tasks
 
     for t in tasks:
         t.start()
+        print str(t) + "was performed"
 
     for task in tasks:
         task.stop()
+        print str(task) + "was stopped"
 
     for task in tasks:
         task.join()
